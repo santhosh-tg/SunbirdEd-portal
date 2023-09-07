@@ -12,8 +12,9 @@ node('build-slave') {
                     if (!env.hub_org) {
                         println(ANSI_BOLD + ANSI_RED + "Uh Oh! Please set a Jenkins environment variable named hub_org with value as registery/sunbidrded" + ANSI_NORMAL)
                         error 'Please resolve the errors and rerun..'
-                    } else
+                    } else {
                         println(ANSI_BOLD + ANSI_GREEN + "Found environment variable named hub_org with value as: " + hub_org + ANSI_NORMAL)
+                    }
                 }
                 // cleanWs()
                 checkout scm
@@ -37,8 +38,24 @@ node('build-slave') {
                     sh("bash ./build.sh  ${build_tag} ${env.NODE_NAME} ${hub_org} ${params.buildDockerImage} ${params.buildCdnAssests} ${params.cdnUrl}")
                 }
 
+                // check if params.buildDockerImage is true, then install snyk and run scan
+                stage('Snyk Scan') {
+                    if (params.buildDockerImage == 'true') {
+                     //   sh '''
+                     //   npm install -g snyk
+                     //   npm install -g snyk-to-html
+                     //   '''
+
+                        sh("snyk container test ${hub_org}/player:${build_tag} --json | snyk-to-html -o snyk_results.html")
+                    }
+                }
+
                 stage('ArchiveArtifacts') {
                     archiveArtifacts "metadata.json"
+                    // archive the html report for snyk scan
+                    if (params.buildDockerImage == 'true') {
+                        archiveArtifacts 'snyk_results.html'
+                    }
                     if (params.buildCdnAssests == 'true') {
                         sh """
                         rm -rf cdn_assets
@@ -50,6 +67,13 @@ node('build-slave') {
                     }
                     currentBuild.description = "${build_tag}"
                 }
+
+                // publish the HTML report for snyk scan
+                stage('PublishReport') {
+                    if (params.buildDockerImage == 'true') {
+                        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: true, reportDir: '', reportFiles: 'snyk_results.html', reportName: 'Snyk Scan Report', reportTitles: ''])
+                    }
+                }
             }
         }
     }
@@ -58,3 +82,4 @@ node('build-slave') {
         throw err
     }
 }
+
