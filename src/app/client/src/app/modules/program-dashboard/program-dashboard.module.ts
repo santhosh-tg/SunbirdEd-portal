@@ -8,7 +8,7 @@ import { programDashboardRoutingModule } from './program-dashboard-routing.modul
 import { TelemetryModule } from '@sunbird/telemetry';
 import { SharedFeatureModule } from '@sunbird/shared-feature';
 import { DatasetsComponent } from './components/program-datasets/program-datasets.component';
-import { DashletModule } from 'sb-dashlet-v14';
+import { DashletModule } from '@project-sunbird/sb-dashlet';
 import { DashboardModule} from '../dashboard';
 import { BigDataPipe } from './pipes/bigData/big-data.pipe';
 import { ChartTypePipe } from './pipes/chartType/chart-type.pipe';
@@ -27,6 +27,7 @@ import { MomentDateAdapter } from '@angular/material-moment-adapter';
 import { PdFiltersComponent } from './shared/pd-filters/pd-filters.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { DateValidatorDirective } from './shared/directives/date-validator/date-validator.directive';
 
 const TIME_RANGE_DATE_FORMAT = {
   parse: {
@@ -48,7 +49,8 @@ const TIME_RANGE_DATE_FORMAT = {
   FilterChartPipe,
   SbBignumberComponent,
   SbTableComponent,
-  PdFiltersComponent
+  PdFiltersComponent,
+  DateValidatorDirective
   ],
   imports: [
     CommonModule,
